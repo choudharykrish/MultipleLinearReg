@@ -245,20 +245,93 @@ for row in promo_df:
                     promoByTime.append(temp)
                     break
     
+for row in A_compact_timeline:
+    if(len(row)==4):
+        row.append(0)
+
+#Getting Sales per day
+for i in range(len(A_compact_timeline)):
+    A_compact_timeline[i][2] = A_compact_timeline[i][2] / A_compact_timeline[i][3]
+
+for i in range(len(A_compact_timeline)):
+    for hol in AHolByTime:
+        if(A_compact_timeline[i][0]==hol[0]):
+            for j in range(1,len(hol)):
+                 A_compact_timeline[i].append(hol[j])
+                 
+                 
+
+for row in  A_compact_timeline:
+    if(len(row)==5):
+        for i in range(18):
+            row.append(0)
+       
+ # One Hot Encoding Product ID
+A_pID_oneHotEncoder = OneHotEncoder(categorical_features=[1])
+A_compact_timeline = A_pID_oneHotEncoder.fit_transform(A_compact_timeline).toarray()
+A_compact_timeline = A_compact_timeline[1:]
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+Y = A_compact_timeline[:,4]
+X = A_compact_timeline
+X = np.delete(X,[4],axis = 1)
+
+
+#splitting the dataset in training set and test set
+from sklearn.cross_validation import train_test_split
+X_train, X_test, Y_train, Y_test =  train_test_split(X, Y, test_size=0.2)
+
+#feature scaling
+from sklearn.preprocessing import StandardScaler
+sc_x = StandardScaler()
+X_train = sc_x.fit_transform(X_train)
+X_test = sc_x.transform(X_test)
+
+from sklearn.decomposition import PCA
+pca = PCA(n_components=20)
+X_train = pca.fit_transform(X_train)
+X_test = pca.transform(X_test)
+explained_variance = pca.explained_variance_ratio_
+
+
+
+# Fitting Multiple Linear Regression to the Training set
+from sklearn.linear_model import LinearRegression
+regressor = LinearRegression()
+regressor.fit(X_train, Y_train)
+
+# Predicting the Test set results
+y_pred = regressor.predict(X_test)
+
+regressor.score(X_train,Y_train)
+
+
+from sklearn import linear_model
+lasso = linear_model.Lasso(alpha=0.8)
+lasso.fit(X_train,Y_train)
+lasso.score(X_train,Y_train)
+
+
+from sklearn.ensemble import RandomForestRegressor
+reg = RandomForestRegressor(max_depth = 5)
+reg.fit(X_train,Y_train)
+#reg.score(X_train,Y_train)
+reg.score(X_test,Y_test)
+
+y_pred = reg.predict(X_test)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 import numpy as np
-np.savetxt("promo.csv", promoByTime, delimiter=",", fmt='%s')
+np.savetxt("A_compact_timeline.csv", A_compact_timeline, delimiter=",", fmt='%s')
 
