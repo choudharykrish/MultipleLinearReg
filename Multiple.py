@@ -286,31 +286,6 @@ sc_x = StandardScaler()
 X_train = sc_x.fit_transform(X_train)
 X_test = sc_x.transform(X_test)
 
-from sklearn.decomposition import PCA
-pca = PCA(n_components=20)
-X_train = pca.fit_transform(X_train)
-X_test = pca.transform(X_test)
-explained_variance = pca.explained_variance_ratio_
-
-
-
-# Fitting Multiple Linear Regression to the Training set
-from sklearn.linear_model import LinearRegression
-regressor = LinearRegression()
-regressor.fit(X_train, Y_train)
-
-# Predicting the Test set results
-y_pred = regressor.predict(X_test)
-
-regressor.score(X_train,Y_train)
-
-
-from sklearn import linear_model
-lasso = linear_model.Lasso(alpha=0.8)
-lasso.fit(X_train,Y_train)
-lasso.score(X_train,Y_train)
-
-
 from sklearn.ensemble import RandomForestRegressor
 reg = RandomForestRegressor(max_depth = 5)
 reg.fit(X_train,Y_train)
