@@ -12,15 +12,18 @@ datetime.date(2013, 1, 1).isocalendar()[1]
 d = "2013-W0"
 r = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
 print(str(r))
+'''
 
-def num_days_month(m):
+def num_days_month(m,y):
     if m==1 or m==3 or m==5 or m==7 or m==8 or m==10 or m==12:
         return 31
     if m==4 or m==6 or m==9 or m==11:
         return 30
-    if m==2:
+    if m==2 and y%4==0:
+        return 29
+    else:
         return 28
-'''
+
 
 def startDate(year, week):
     d = str(year) + '-W' + str(week)
@@ -85,9 +88,11 @@ def unique(list,index):
 
 
 
+
 ############## PART-1: PREPROCESSING #################################
     
 
+countries = ['Argentina','Belgium','Columbia','Denmark','England','Finland']
 
 #           HOLIDAYS                #
     
@@ -110,12 +115,12 @@ def getHolidaysByCountry(country):
 
 holiday = dataset[0]
 print(holiday)
-A_holidays = getHolidaysByCountry('Argentina')
-B_holidays = getHolidaysByCountry('Belgium')
-C_holidays = getHolidaysByCountry('Columbia')
-D_holidays = getHolidaysByCountry('Denmark')
-E_holidays = getHolidaysByCountry('England')
-F_holidays = getHolidaysByCountry('Finland')
+A_holidays = getHolidaysByCountry(countries[0])
+B_holidays = getHolidaysByCountry(countries[1])
+C_holidays = getHolidaysByCountry(countries[2])
+D_holidays = getHolidaysByCountry(countries[3])
+E_holidays = getHolidaysByCountry(countries[4])
+F_holidays = getHolidaysByCountry(countries[5])
 
 
 ########### ARGENTINA ################
@@ -144,6 +149,15 @@ for i in unique(A_holidays,-1):
             AHolByWeek.append(temp)
             
 
+AHolByTime = []
+for i in range(1,len(daysByWeek)):
+    for row in AHolByWeek:
+        if((daysByWeek[i][0]==row[-2]) and (daysByWeek[i][2]==row[-1])):
+            temp = [i]
+            for j in range(len(row)-2):
+                temp.append(row[j])
+            AHolByTime.append(temp)
+
 
 #               TRAIN               #
             
@@ -155,17 +169,76 @@ D_train = []
 E_train = []
 F_train = []
 
+train_df = train_csv.iloc[:,:].values
+
+for row in train_df:
+    if row[4]==countries[0]:
+        A_train.append(row)
+    elif row[4]==countries[1]:
+        B_train.append(row)
+    elif row[4]==countries[2]:
+        C_train.append(row)
+    elif row[4]==countries[3]:
+        D_train.append(row)
+    elif row[4]==countries[4]:
+        E_train.append(row)
+    elif row[4]==countries[5]:
+        F_train.append(row)
+
+print(A_train[0])
+        
 
 
+# MAPPING YEAR and WEEK NUMBER TO TIMELINE INDECES #
+
+A_timeline = []
+#[timestamp,  product ID, sales, number of days in that timestamp]
+for i in range(1,len(daysByWeek)):
+    for row in A_train:
+        if((daysByWeek[i][0]==row[0]) and (daysByWeek[i][2]==row[2])):
+            temp = [i,row[3],row[5],daysByWeek[i][3]]
+            A_timeline.append(temp)
 
 
+A_compact_timeline = []
+# [timestamp, product ID, Total Sales, Number of Days]
+for row in A_timeline:
+    added = 0
+    for i in range(len(A_compact_timeline)):
+        if(row[0]==A_compact_timeline[i][0] and row[1]==A_compact_timeline[i][1]):
+            A_compact_timeline[i][2] += int(row[2])
+            added = 1
+    if(added==0):
+        A_compact_timeline.append(row)
+            
 
+############### PROMOTIONS  ################################
 
+promotions_csv = pd.read_csv('promotional_expense.csv')
 
+promo_df = promotions_csv.iloc[:,:5].values
 
+def Time2Date(timestamp):
+    return daysByWeek[timestamp][0], daysByWeek[timestamp][1], daysByWeek[timestamp][2]
 
+def Date2Time(year, month):
+    list=[]
+    for i in range(1,len(daysByWeek)):
+        if daysByWeek[i][0]==year and daysByWeek[i][1]==month:
+            list.append(i)
+    return list
 
-
+for row in promo_df:
+    month = row[1]
+    year = row[0]
+    days = num_days_month(month,year)
+    promoPerDay = row[4]/days
+    times = Date2Time(year,month)
+    for i in range(len(A_compact_timeline)):
+        for time in times:
+            if A_compact_timeline[i][0] == time and A_compact_timeline[i][1]==row[3]:
+                A_compact_timeline[i].append(promoPerDay)
+            
 
 
 
