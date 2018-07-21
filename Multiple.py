@@ -228,17 +228,37 @@ def Date2Time(year, month):
             list.append(i)
     return list
 
+promoByTime = []
 for row in promo_df:
-    month = row[1]
-    year = row[0]
-    days = num_days_month(month,year)
-    promoPerDay = row[4]/days
-    times = Date2Time(year,month)
-    for i in range(len(A_compact_timeline)):
+    if row[2] == countries[0]:
+        month = row[1]
+        year = row[0]
+        days = num_days_month(month,year)
+        promoPerDay = row[4]/days
+        pID = row[3]
+        times = Date2Time(year,month)
         for time in times:
-            if A_compact_timeline[i][0] == time and A_compact_timeline[i][1]==row[3]:
-                A_compact_timeline[i].append(promoPerDay)
-            
+            for i in range(len(A_compact_timeline)):
+                if A_compact_timeline[i][0] == time and A_compact_timeline[i][1]==row[3]:
+                    A_compact_timeline[i].append(promoPerDay)
+                    temp = [time,pID, promoPerDay]
+                    promoByTime.append(temp)
+                    break
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-
+import numpy as np
+np.savetxt("promo.csv", promoByTime, delimiter=",", fmt='%s')
 
