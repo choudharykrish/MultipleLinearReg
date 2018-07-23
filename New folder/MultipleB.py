@@ -4,8 +4,9 @@ import datetime
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
-sales_per_day_col_no = 3
-countries = ['Columbia','Belgium','Argentina','Denmark','England','Finland']
+sales_per_day_col_no = 2
+countries = ['Belgium','Argentina','Columbia','Denmark','England','Finland']
+
 ################## PART-0: AUXILLARY FUNCTIONS #########################
 
 def num_days_month(m,y):
@@ -82,7 +83,6 @@ def unique(list,index):
 
 ############## PART-1: PREPROCESSING #################################
     
-
 
 
 #           HOLIDAYS                #
@@ -250,17 +250,18 @@ for i in range(len(A_compact_timeline)):
             for j in range(1,len(hol)):
                  A_compact_timeline[i].append(hol[j])
                  
-#-----------------------------------------------------------------
-n_features = 23
-for row in  A_compact_timeline:
+#----------------------------------------------------------------------------------
+n_features = 17
+for row in A_compact_timeline:
     if(len(row)<n_features):
         for i in range(n_features-len(row)):
             row.append(0)
-       
+
+
 ### # One Hot Encoding Product ID
 A_pID_oneHotEncoder = OneHotEncoder(categorical_features=[1])
 A_compact_timeline = A_pID_oneHotEncoder.fit_transform(A_compact_timeline).toarray()
-A_compact_timeline = A_compact_timeline[:,1:]
+A_compact_timeline = A_compact_timeline[1:]
 
 Y = A_compact_timeline[:,sales_per_day_col_no]
 X = A_compact_timeline
@@ -355,26 +356,13 @@ grid_search = grid_search.fit(X_train, Y_train)
 best_accuracy = grid_search.best_score_
 best_parameters = grid_search.best_params_
 
-
-
-#splitting the dataset in training set and test set
-from sklearn.cross_validation import train_test_split
-X_train, X_test, Y_train, Y_test =  train_test_split(X, Y, test_size=0.2)
-
-from sklearn.ensemble import RandomForestRegressor
-
-for i in range(1,15):
-    print('-------------------------------')
-    print(i)
-    reg = RandomForestRegressor(max_depth = i)
-    reg.fit(X_train,Y_train)
-    print('Train Accuracy: ')
-    print(reg.score(X_train,Y_train))
-    print('Test Accuracy: ')
-    print(reg.score(X_test,Y_test))
-
-
 '''
+
+
+
+
+
+
 
 
 '''
@@ -383,16 +371,6 @@ np.savetxt("A_compact_timeline.csv", A_compact_timeline, delimiter=",", fmt='%s'
 '''
 
 
-
-
-from sklearn.ensemble import RandomForestRegressor
-
-reg = RandomForestRegressor(max_depth = 10)
-reg.fit(X,Y)
-print('Train Accuracy: ')
-print(reg.score(X,Y))
-print('Test Accuracy: ')
-print(reg.score(X,Y))
 
 
 
@@ -469,7 +447,7 @@ a_test_with_pID = a_test_timeline
 ### # One Hot Encoding Product ID
 #A_pID_oneHotEncoder1 = OneHotEncoder(categorical_features=[1])
 a_test_timeline = A_pID_oneHotEncoder.transform(a_test_timeline).toarray()
-a_test_timeline = a_test_timeline[:,1:]
+a_test_timeline = a_test_timeline[1:]
 
 
 
@@ -493,7 +471,7 @@ for i in range(len(y_pred)):
 
 finaldic = {}    
 for j in range(len(daysByWeek)):
-    timestamp = a_test_timeline[sales_per_day_col_no]
+    timestamp = a_test_timeline[sales_per_day_col_no-1]
     for i in range(len(a_test_timeline)):
         if(a_test_timeline[i][sales_per_day_col_no-1] == j):
             key = str(daysByWeek[j][0]) + str(daysByWeek[j][1]) + str(a_test_with_pID[i][1])
@@ -502,9 +480,9 @@ for j in range(len(daysByWeek)):
             else:
                 finaldic[key] = y_pred[i]
                 
-  
-for key in finaldic:
-    print (key,       finaldic[key])
+            
+
+
 
 
 

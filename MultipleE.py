@@ -4,8 +4,8 @@ import datetime
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
-sales_per_day_col_no = 3
-countries = ['Columbia','Belgium','Argentina','Denmark','England','Finland']
+sales_per_day_col_no = 2
+countries = ['England','Denmark','Columbia','Belgium','Argentina','Finland']
 ################## PART-0: AUXILLARY FUNCTIONS #########################
 
 def num_days_month(m,y):
@@ -251,7 +251,7 @@ for i in range(len(A_compact_timeline)):
                  A_compact_timeline[i].append(hol[j])
                  
 #-----------------------------------------------------------------
-n_features = 23
+n_features = 14
 for row in  A_compact_timeline:
     if(len(row)<n_features):
         for i in range(n_features-len(row)):
@@ -296,7 +296,7 @@ Y_test = sc_y.transform(Y_test.reshape(-1,1))
 '''
 from sklearn.ensemble import RandomForestRegressor
 
-reg = RandomForestRegressor(max_depth = 9)
+reg = RandomForestRegressor(max_depth = 8)
 reg.fit(X,Y)
 print('Train Accuracy: ')
 print(reg.score(X,Y))
@@ -355,13 +355,14 @@ grid_search = grid_search.fit(X_train, Y_train)
 best_accuracy = grid_search.best_score_
 best_parameters = grid_search.best_params_
 
-
-
+'''
+'''
 #splitting the dataset in training set and test set
 from sklearn.cross_validation import train_test_split
 X_train, X_test, Y_train, Y_test =  train_test_split(X, Y, test_size=0.2)
 
 from sklearn.ensemble import RandomForestRegressor
+
 
 for i in range(1,15):
     print('-------------------------------')
@@ -373,9 +374,9 @@ for i in range(1,15):
     print('Test Accuracy: ')
     print(reg.score(X_test,Y_test))
 
-
 '''
-
+'''
+'''
 
 '''
 import numpy as np
@@ -383,16 +384,6 @@ np.savetxt("A_compact_timeline.csv", A_compact_timeline, delimiter=",", fmt='%s'
 '''
 
 
-
-
-from sklearn.ensemble import RandomForestRegressor
-
-reg = RandomForestRegressor(max_depth = 10)
-reg.fit(X,Y)
-print('Train Accuracy: ')
-print(reg.score(X,Y))
-print('Test Accuracy: ')
-print(reg.score(X,Y))
 
 
 
