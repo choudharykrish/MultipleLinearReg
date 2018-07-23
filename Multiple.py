@@ -433,8 +433,8 @@ for i in range(len(a_test_timeline)):
 
 
 for row in a_test_timeline:
-    if(len(row)<22):
-        for i in range(22-len(row)):
+    if(len(row)<23):
+        for i in range(23-len(row)):
             row.append(0)
 
 #a_test_timeline =  np.asarray(a_test_timeline)
@@ -444,7 +444,7 @@ a_test_with_pID = a_test_timeline
 ### # One Hot Encoding Product ID
 #A_pID_oneHotEncoder1 = OneHotEncoder(categorical_features=[1])
 a_test_timeline = A_pID_oneHotEncoder.transform(a_test_timeline).toarray()
-a_test_timeline = a_test_timeline[1:]
+a_test_timeline = a_test_timeline[:,1:]
 
 
 
@@ -464,20 +464,20 @@ X_test = np.concatenate([X_test,scaled1],axis=1)
 y_pred = reg.predict(a_test_timeline)
 
 for i in range(len(y_pred)):
-    y_pred[i] = y_pred[i] * a_test_timeline[i][4]
+    y_pred[i] = y_pred[i] * a_test_timeline[i][3]
 
 finaldic = {}    
 for j in range(len(daysByWeek)):
-    timestamp = a_test_timeline[3]
+    timestamp = a_test_timeline[2]
     for i in range(len(a_test_timeline)):
-        if(a_test_timeline[i][3] == j):
+        if(a_test_timeline[i][2] == j):
             key = str(daysByWeek[j][0]) + str(daysByWeek[j][1]) + str(a_test_with_pID[i][1])
             if key in finaldic:
                 finaldic[key] += y_pred[i]
             else:
                 finaldic[key] = y_pred[i]
                 
-            
+  
 
 
 

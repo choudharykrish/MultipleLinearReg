@@ -4,6 +4,9 @@ import datetime
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
+sales_per_day_col_no = 4
+countries = ['Columbia','Belgium','Argentina','Denmark','England','Finland']
+
 ################## PART-0: AUXILLARY FUNCTIONS #########################
 
 def num_days_month(m,y):
@@ -81,7 +84,6 @@ def unique(list,index):
 ############## PART-1: PREPROCESSING #################################
     
 
-countries = ['Argentina','Belgium','Columbia','Denmark','England','Finland']
 
 #           HOLIDAYS                #
     
@@ -248,21 +250,22 @@ for i in range(len(A_compact_timeline)):
             for j in range(1,len(hol)):
                  A_compact_timeline[i].append(hol[j])
                  
-                 
-
-for row in  A_compact_timeline:
-    if(len(row)==5):
-        for i in range(18):
+#----------------------------------------------------------------------------------
+n_features = 23
+for row in A_compact_timeline:
+    if(len(row)<n_features):
+        for i in range(n_features-len(row)):
             row.append(0)
-       
+
+
 ### # One Hot Encoding Product ID
 A_pID_oneHotEncoder = OneHotEncoder(categorical_features=[1])
 A_compact_timeline = A_pID_oneHotEncoder.fit_transform(A_compact_timeline).toarray()
 A_compact_timeline = A_compact_timeline[1:]
 
-Y = A_compact_timeline[:,4]
+Y = A_compact_timeline[:,sales_per_day_col_no]
 X = A_compact_timeline
-X = np.delete(X,[4],axis = 1)
+X = np.delete(X,[sales_per_day_col_no],axis = 1)
 #y = Y.reshape(-1,1)
 
 #Squaring sales per day
@@ -433,8 +436,8 @@ for i in range(len(a_test_timeline)):
 
 
 for row in a_test_timeline:
-    if(len(row)<22):
-        for i in range(22-len(row)):
+    if(len(row)<n_features-1):
+        for i in range(n_features-len(row)-1):
             row.append(0)
 
 #a_test_timeline =  np.asarray(a_test_timeline)
@@ -464,13 +467,13 @@ X_test = np.concatenate([X_test,scaled1],axis=1)
 y_pred = reg.predict(a_test_timeline)
 
 for i in range(len(y_pred)):
-    y_pred[i] = y_pred[i] * a_test_timeline[i][4]
+    y_pred[i] = y_pred[i] * a_test_timeline[i][sales_per_day_col_no]
 
 finaldic = {}    
 for j in range(len(daysByWeek)):
-    timestamp = a_test_timeline[3]
+    timestamp = a_test_timeline[sales_per_day_col_no-1]
     for i in range(len(a_test_timeline)):
-        if(a_test_timeline[i][3] == j):
+        if(a_test_timeline[i][sales_per_day_col_no-1] == j):
             key = str(daysByWeek[j][0]) + str(daysByWeek[j][1]) + str(a_test_with_pID[i][1])
             if key in finaldic:
                 finaldic[key] += y_pred[i]
