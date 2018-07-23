@@ -258,11 +258,11 @@ for row in  A_compact_timeline:
 ### # One Hot Encoding Product ID
 A_pID_oneHotEncoder = OneHotEncoder(categorical_features=[1])
 A_compact_timeline = A_pID_oneHotEncoder.fit_transform(A_compact_timeline).toarray()
-A_compact_timeline = A_compact_timeline[1:]
+A_compact_timeline = A_compact_timeline[:,1:]
 
-Y = A_compact_timeline[:,4]
+Y = A_compact_timeline[:,3]
 X = A_compact_timeline
-X = np.delete(X,[4],axis = 1)
+X = np.delete(X,[3],axis = 1)
 #y = Y.reshape(-1,1)
 
 #Squaring sales per day
@@ -433,8 +433,8 @@ for i in range(len(a_test_timeline)):
 
 
 for row in a_test_timeline:
-    if(len(row)<23):
-        for i in range(23-len(row)):
+    if(len(row)<22):
+        for i in range(22-len(row)):
             row.append(0)
 
 #a_test_timeline =  np.asarray(a_test_timeline)
@@ -478,7 +478,6 @@ for j in range(len(daysByWeek)):
                 finaldic[key] = y_pred[i]
                 
   
-
 
 
 
