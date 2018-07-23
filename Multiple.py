@@ -270,11 +270,11 @@ X = np.delete(X,[4],axis = 1)
     #X[i][4] = X[i][4]**1
 
 
-
+'''
 #splitting the dataset in training set and test set
 from sklearn.cross_validation import train_test_split
 X_train, X_test, Y_train, Y_test =  train_test_split(X, Y, test_size=0.2)
-'''
+
 #feature scaling
 from sklearn.preprocessing import StandardScaler
 sc_x = StandardScaler()
@@ -293,17 +293,15 @@ Y_test = sc_y.transform(Y_test.reshape(-1,1))
 
 '''
 from sklearn.ensemble import RandomForestRegressor
-for i in range(1,10):
-    print('------------------------')
-    print(i)
-    reg = RandomForestRegressor(max_depth = i)
-    reg.fit(X_train,Y_train)
-    print('Train Accuracy: ')
-    print(reg.score(X_train,Y_train))
-    print('Test Accuracy: ')
-    print(reg.score(X_test,Y_test))
 
-y_pred = reg.predict(X_test)
+reg = RandomForestRegressor(max_depth = 9)
+reg.fit(X,Y)
+print('Train Accuracy: ')
+print(reg.score(X,Y))
+print('Test Accuracy: ')
+print(reg.score(X,Y))
+
+#y_pred = reg.predict(X_test)
 
 
 '''
