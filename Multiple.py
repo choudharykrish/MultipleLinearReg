@@ -6,14 +6,6 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 ################## PART-0: AUXILLARY FUNCTIONS #########################
 
-'''
-datetime.date(2013, 1, 1).isocalendar()[1]
-
-d = "2013-W0"
-r = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
-print(str(r))
-'''
-
 def num_days_month(m,y):
     if m==1 or m==3 or m==5 or m==7 or m==8 or m==10 or m==12:
         return 31
@@ -36,7 +28,7 @@ def startDate(year, week):
     
 # Number of days in each week by month and year
 daysByWeek = []
-for y in range(2013,2017):
+for y in range(2013,2018):
     for week in range(52):
         d_prev_week = -100
         d_week = -100
@@ -62,10 +54,7 @@ for y in range(2013,2017):
             d_prev_week = 7 - startDate(y,week)[0] + 1
             d_week = startDate(y,week)[0] - 1
         temp1 = [y,month, week+1, d_week]
-            #daysByWeek.append(temp)
         if(d_prev_week!=-100):
-            #if wtemp != 53:
-                #wtemp += 1
             if(month==1):
                 month = 12
                 ytemp = y-1
@@ -266,35 +255,107 @@ for row in  A_compact_timeline:
         for i in range(18):
             row.append(0)
        
- # One Hot Encoding Product ID
+### # One Hot Encoding Product ID
 A_pID_oneHotEncoder = OneHotEncoder(categorical_features=[1])
 A_compact_timeline = A_pID_oneHotEncoder.fit_transform(A_compact_timeline).toarray()
 A_compact_timeline = A_compact_timeline[1:]
-    
+
 Y = A_compact_timeline[:,4]
 X = A_compact_timeline
 X = np.delete(X,[4],axis = 1)
+#y = Y.reshape(-1,1)
+
+#Squaring sales per day
+#for i in range(505):
+    #X[i][4] = X[i][4]**1
+
 
 
 #splitting the dataset in training set and test set
 from sklearn.cross_validation import train_test_split
 X_train, X_test, Y_train, Y_test =  train_test_split(X, Y, test_size=0.2)
-
+'''
 #feature scaling
 from sklearn.preprocessing import StandardScaler
 sc_x = StandardScaler()
-X_train = sc_x.fit_transform(X_train)
-X_test = sc_x.transform(X_test)
+scaled = sc_x.fit_transform(X_train[:,[3,4]])
+X_train = np.delete(X_train,[3,4],axis=1)
+X_train = np.concatenate([X_train,scaled],axis=1)
 
+scaled1 = sc_x.transform(X_test[:,[3,4]])
+X_test = np.delete(X_test,[3,4],axis=1)
+X_test = np.concatenate([X_test,scaled1],axis=1)
+
+
+sc_y = StandardScaler()
+Y_train = sc_y.fit_transform(Y_train.reshape(-1,1))
+Y_test = sc_y.transform(Y_test.reshape(-1,1))
+
+'''
 from sklearn.ensemble import RandomForestRegressor
-reg = RandomForestRegressor(max_depth = 5)
-reg.fit(X_train,Y_train)
-#reg.score(X_train,Y_train)
-reg.score(X_test,Y_test)
+for i in range(1,10):
+    print('------------------------')
+    print(i)
+    reg = RandomForestRegressor(max_depth = i)
+    reg.fit(X_train,Y_train)
+    print('Train Accuracy: ')
+    print(reg.score(X_train,Y_train))
+    print('Test Accuracy: ')
+    print(reg.score(X_test,Y_test))
 
 y_pred = reg.predict(X_test)
 
 
+'''
+from sklearn.linear_model import LinearRegression
+reg = LinearRegression()
+reg.fit(X_train,Y_train)
+print('Train Accuracy: ')
+print(reg.score(X_train,Y_train))
+print('Test Accuracy: ')
+print(reg.score(X_test,Y_test))
+
+
+
+from sklearn.decomposition import PCA
+pca = PCA(n_components=1)
+X_train = pca.fit_transform(X_train)
+X_test = pca.transform(X_test)
+explained_variance = pca.explained_variance_ratio_
+
+
+
+# Fitting SVR to the dataset
+from sklearn.svm import SVR
+reg = SVR(kernel = 'linear')
+reg.fit(X_train, Y_train)
+print('Train Accuracy: ')
+print(reg.score(X_train,Y_train))
+print('Test Accuracy: ')
+print(reg.score(X_test,Y_test))
+
+# Applying k-Fold Cross Validation
+from sklearn.model_selection import cross_val_score
+accuracies = cross_val_score(estimator = reg, X = X_train, y = Y_train, cv = 10)
+accuracies.mean()
+accuracies.std()
+
+
+
+# Applying Grid Search to find the best model and the best parameters
+from sklearn.model_selection import GridSearchCV
+parameters = [{'C': [1, 10, 100, 1000], 'kernel': ['linear']},
+              {'C': [1, 10, 100, 1000], 'kernel': ['rbf'], 'gamma': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]}]
+grid_search = GridSearchCV(estimator = reg,
+                           param_grid = parameters,
+                           scoring = 'accuracy',
+                           cv = 10,
+                           n_jobs = -1)
+grid_search = grid_search.fit(X_train, Y_train)
+best_accuracy = grid_search.best_score_
+best_parameters = grid_search.best_params_
+
+'''
 
 
 
@@ -303,10 +364,128 @@ y_pred = reg.predict(X_test)
 
 
 
-
-
-
-
+'''
 import numpy as np
 np.savetxt("A_compact_timeline.csv", A_compact_timeline, delimiter=",", fmt='%s')
+'''
+
+
+
+
+
+#####################################################################################
+###################PREDICTING RESULTS################################################
+#####################################################################################
+
+test_csv = pd.read_csv('yds_test2018.csv')
+
+test_df = test_csv.iloc[:,1:5]
+
+
+testByWeeks  = []
+test_df = test_csv.values[:,1:5]
+for row in test_df:
+    if(row[3] == countries[0]):
+        
+        temp = []
+        date = Date2Time(row[0],row[1])
+        for i in date:
+            temp = row
+            temp = temp.tolist()
+            temp.append(i)
+            testByWeeks.append(temp)
+        
+a_test_timeline = []
+for row in testByWeeks:
+    a_test_timeline.append([row[4],row[2]])
+    
+for row in a_test_timeline:
+    timestamp = row[0]
+    days = daysByWeek[timestamp][3]
+    row.append(days)
+
+
+
+promoByTime = []
+for row in promo_df:
+    if row[2] == countries[0]:
+        month = row[1]
+        year = row[0]
+        days = num_days_month(month,year)
+        promoPerDay = row[4]/days
+        pID = row[3]
+        times = Date2Time(year,month)
+        for time in times:
+            for i in range(len(a_test_timeline)):
+                if a_test_timeline[i][0] == time and a_test_timeline[i][1]==row[3]:
+                    a_test_timeline[i].append(promoPerDay)
+                    temp = [time,pID, promoPerDay]
+                    promoByTime.append(temp)
+                    break
+
+for i in range(len(a_test_timeline)):
+    for hol in AHolByTime:
+        if(a_test_timeline[i][0]==hol[0]):
+            for j in range(1,len(hol)):
+                 a_test_timeline[i].append(hol[j])
+
+
+
+
+
+
+for row in a_test_timeline:
+    if(len(row)<22):
+        for i in range(22-len(row)):
+            row.append(0)
+
+#a_test_timeline =  np.asarray(a_test_timeline)
+
+a_test_with_pID = a_test_timeline
+
+### # One Hot Encoding Product ID
+#A_pID_oneHotEncoder1 = OneHotEncoder(categorical_features=[1])
+a_test_timeline = A_pID_oneHotEncoder.transform(a_test_timeline).toarray()
+a_test_timeline = a_test_timeline[1:]
+
+
+
+'''
+#feature scaling
+from sklearn.preprocessing import StandardScaler
+scaled_test = sc_x.transform(a_test_timeline[:,[3,4]])
+X_train = np.delete(X_train,[3,4],axis=1)
+X_train = np.concatenate([X_train,scaled],axis=1)
+
+scaled1 = sc_x.transform(X_test[:,[3,4]])
+X_test = np.delete(X_test,[3,4],axis=1)
+X_test = np.concatenate([X_test,scaled1],axis=1)
+'''
+
+
+y_pred = reg.predict(a_test_timeline)
+
+for i in range(len(y_pred)):
+    y_pred[i] = y_pred[i] * a_test_timeline[i][4]
+
+finaldic = {}    
+for j in range(len(daysByWeek)):
+    timestamp = a_test_timeline[3]
+    for i in range(len(a_test_timeline)):
+        if(a_test_timeline[i][3] == j):
+            key = str(daysByWeek[j][0]) + str(daysByWeek[j][1]) + str(a_test_with_pID[i][1])
+            if key in finaldic:
+                finaldic[key] += y_pred[i]
+            else:
+                finaldic[key] = y_pred[i]
+                
+            
+
+
+
+
+
+
+
+
 
